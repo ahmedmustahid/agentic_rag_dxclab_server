@@ -1,0 +1,61 @@
+# --- Used at auto_rag_agent.py ---
+
+select_tool: |
+  [Plan/Tool Name to Execute]
+  {plan}
+  Tools: {tool_name}
+
+# --- Used at router_agent.py ---
+route_request: |
+  [User's Question/Request]
+  {request}
+  [User's Question/Request (Revised)]
+  {rev_request}
+  [Name of AI Agent to Execute]
+  {agent_name}
+  [Reason for Choosing the Agent]
+  {reason_sel}
+  [Reason for Rewriting the Question]
+  {revised_reason}
+
+# --- Used at answer_llm.py ---
+
+ans_llm_solo: |
+  [Response Based on LLM's Base Knowledge]
+  {content}
+
+# --- Used at ask_human.py ---
+ask_human: |
+  [Question for the User]
+  {content}
+
+# --- Used at auto_research.py ---
+search_rag: |
+  [Execute RAG Search]
+  {content}
+
+ans_tavily: |
+  [Execute Web Search]
+  {content}
+
+ans_arxiv: |
+  [Execute arXiv Search]
+  {content}
+
+create_plan: |
+  [Plan]
+  Number of Plans: {num_plans}
+  {plans}
+
+update_plan_status: |
+  [Plan Execution Status]
+  {plan_status}
+judge_replan: |
+  [Determine Whether to Re-plan]
+  Current Turn: {turn}
+  {content}
+
+create_revised_plan: |
+  [Replan]
+  Number of Plans: {num_plans}
+  {plans}

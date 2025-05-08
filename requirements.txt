@@ -1,0 +1,39 @@
+# Core
+uvicorn==0.34.2
+fastapi==0.115.12
+python-dotenv==1.1.0
+
+# LangChain
+langchain==0.3.25
+langchain-community==0.3.23
+
+# LangGraph
+langgraph==0.4.3
+langgraph-checkpoint==2.0.25
+langgraph-prebuilt==0.1.8
+
+# Open AI
+openai==1.77.0
+langchain-openai==0.3.16
+
+# FAISS
+langchain-huggingface==0.2.0
+faiss-cpu==1.11.0
+
+# tavily search
+tavily-python==0.7.2
+
+# Session
+starlette-session==0.4.3
+
+# arxiv
+arxiv==2.2.0
+
+# pdf file for embedding
+pypdf==5.4.0
+
+# black 
+black==25.1.0
+
+# isort
+isort==6.0.1

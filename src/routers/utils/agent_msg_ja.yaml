@@ -1,0 +1,60 @@
+# --- Used at auto_rag_agent.py ---
+
+select_tool: |
+  [実行するプラン/ツール名]
+  {plan}
+  Tools: {tool_name}
+
+# --- Used at router_agent.py ---
+route_request: |
+  [ユーザーからの質問・依頼]
+  {request}
+  [ユーザーからの質問・依頼(更新版)]
+  {rev_request}
+  [実行するAI Agent名]
+  {agent_name}
+  [Agent選択理由]
+  {reason_sel}
+  [質問を書き換えた場合の理由]
+  {revised_reason}
+
+# --- Used at answer_llm.py ---
+
+ans_llm_solo: |
+  [LLMが持つベースの知識を基に回答]
+  {content}
+
+# --- Used at ask_human.py ---
+ask_human: |
+  [ユーザーへの質問]
+  {content}
+
+# --- Used at auto_research.py ---
+search_rag: |
+  [RAG検索実行]
+  {content}
+
+ans_tavily: |
+  [Web検索実行]
+  {content}
+
+ans_arxiv: |
+  [arxiv検索実行]
+  {content}
+
+create_plan: |
+  [プラン]
+  プラン数：{num_plans}
+  {plans}
+
+update_plan_status: |
+  [プラン実行状況]
+  {plan_status}
+judge_replan: |
+  [再プランを行うかどうかの判定]
+  現在のターン数: {turn}
+  {content}
+create_revised_plan: |
+  [プランの再作成]
+  プラン数：{num_plans}
+  {plans}

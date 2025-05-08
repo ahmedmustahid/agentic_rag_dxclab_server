@@ -1,0 +1,21 @@
+.DS_Store
+.env*
+.vscode/launch.json
+.venv
+__pycache__
+*.pyc
+index/index.*
+!.gitkeep
+input_file/*
+!.gitkeep
+
+# distフォルダー全体を無視。ただし、dist/.gitkeepとdist/assets/.gitkeepは無視しない。
+dist/* 
+!dist/.gitkeep
+!dist/index.html
+!dist/assets
+!dist/assets/.gitkeep
+
+# dist/assetsフォルダー内の全てのファイルを無視。ただし、dist/assets/.gitkeepは無視しない
+dist/assets/*
+!dist/assets/.gitkeep

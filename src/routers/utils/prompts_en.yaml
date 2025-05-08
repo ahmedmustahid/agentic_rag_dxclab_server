@@ -1,0 +1,262 @@
+# --- Used at auto_rag_agent.py ---
+
+select_tool: |
+  # Instructions
+  {plan}
+
+  # Notes
+  - If a specific tool name is clearly stated in the instructions above, invoke that tool.
+  - Do not ask any questions. Also, do not write any messages in the `content`.
+  - If it is unclear which tool to invoke, select an appropriate tool based on the "Available Tools Information" provided below. Carefully review the characteristics of the listed tools and choose accordingly. First, determine whether the task requires a search or another type of operation. If it remains unclear, invoke `ans_llm_base`.
+  - Do not invoke the "search tool" for purposes other than searching.
+
+  # Available Tools Information
+  {tool_info}
+
+# --- Used at router_agent.py ---
+
+route_request: |
+  # Instructions
+  - Determine which AI Agent to invoke based on the user's question or request.
+  - If the user's question contains pronouns such as "this," "these," "that," etc., clearly replace each pronoun with the full expression it refers to, and write the clarified version in `revised_request`. If no changes are required, copy the user's original question directly into `revised_request`. Consider the intent of the user's question or request when creating the `revised_request`. Ensure that no pronouns remain, as unresolved pronouns may cause incorrect processing in subsequent steps.
+  - Also, reference the conversation history to understand the context. Even if there are no pronouns, the user might be asking based on the context of the previous conversation. For instance, if an AI Agent previously clarified unclear points with the user, and the user has responded, summarize the entire context clearly and incorporate it into the `revised_request`.
+  - Even if the user's question contains no pronouns, the user might expect an answer that considers the context of previous conversations. In such cases, infer the intended meaning by examining the conversation history.
+  - When dealing with date/time-related questions such as "X years ago," calculate the exact date/time based on the current date/time provided below and incorporate the calculated result into the `revised_request`.
+  - If, even after consulting the conversation history, it remains unclear what a pronoun refers to, or if the subject/object is unclear, confirm details with the user. In such cases, invoke the `ask_human` agent and pose your question to the user. However, try to minimize calling `ask_human`, as frequent clarifications can inconvenience the user. By examining the recent conversation history, you can determine if a similar question was recently asked. When calling `ask_human`, specify the question for the user in the JSON `revised_request` field and include `"agent_name": "ask_human"` in the JSON.
+  - If the user asks for web searches or recent information, specify `"agent_name": "auto_research"` in the JSON.
+  - When the user refers to items numerically, such as "Research 1, 2, and 3," or "Compare items 2 and 3," consider that these numbers might correspond to previously listed bullet points.
+  - Before outputting, confirm that no fields are missing from the JSON structure.
+
+  # User's Question/Request
+  {request}
+
+  # Constraints
+  - Only the following three AI Agents can be invoked:
+    - `answer_llm`: Answers based on LLM’s internal knowledge. Mainly used for greetings, simple questions or instructions, and questions referring to past conversation history. It does not have web search capabilities; call another tool if necessary.
+    - `auto_research`: Used when detailed research involving web search or RAG search is needed. Automatically formulates and executes a research plan.
+    - `ask_human`: This agent asks clarifying questions to the user. Invoke this agent when you must clarify unclear points with the user, but minimize its usage. Include your clarifying question in the `revised_request`. If you require a response from LLM itself, invoke `answer_llm` instead.
+
+  # Output
+  Use JSON format as shown below.
+  - `agent_name`: Enter the name of the AI agent to invoke.
+  - `reason_sel`: Provide a concise reason.
+  - `revised_request`: If rewriting the question, enter the modified question.
+  - `revised_reason`: Clearly state the reason for rewriting the question.
+  - Ensure the output is in JSON format. Never output as plain text. Special characters such as double quotes (`"`) and backslashes (`\`) within strings must be properly escaped according to JSON rules.
+
+  Example Output: {{"agent_name": "auto_research", "reason_sel": "Because ~.","revised_request": "What is ~?","revised_reason": "Because ~."}}
+
+  # Conversation History  
+  {msg_history}  
+
+  # Current Date and Time  
+  {date_time}
+
+# --- Used at answer_llm.py ---
+
+ans_llm_solo: |
+  # Instructions  
+  Please respond to the user's question or request. When doing so, take into account the conversation history as well.  
+  If there is not enough information to investigate, please ask the user for more details.  
+
+  # Question  
+  {rev_request}  
+
+  # Conversation History  
+  {msg_history}  
+
+  # Current Date and Time  
+  {date_time}
+
+# --- Used at ask_human.py ---
+
+ask_human: |
+  # Instructions
+  Please ask the user the following "Question to User," taking into account the provided "Conversation History." You attempted to answer the user's latest question but require additional information from the user due to insufficient context.
+
+  # Question to User
+  {rev_request}
+
+  # Conversation History
+  {msg_history}
+
+# --- Used at auto_research.py ---
+
+ans_llm_base: |
+  # Instructions
+  Answer the user's question or request. If a research history is available, please refer to it.  
+  Keep the answer concise.
+
+  # Question
+  {question}
+
+  # Research History
+  {res_history}
+
+  # Current Date/Time
+  {date_time}
+
+ans_arxiv: |
+  # Instructions
+  You are an expert at generating queries to search for technical papers on the arXiv website using its API.  
+  Extract only technical keywords (nouns) and create an arXiv search query. If the user's question is not in English, translate it to English before processing.
+  If the keyword consists of combined words (e.g., multi-agent), separate them into individual keywords.  
+  Do not provide intermediate steps or explanations. Output only the query.  
+  If the user requests to find similar papers, limit the number of search keywords to three or fewer to avoid overly restrictive queries.  
+  If a research history is provided, consider it, as you may be required to generate keywords based on the content described in the research history.
+
+  # Constraints
+  - Do not include general paper-related terms such as "research," "paper," etc. Subsequent processing involves searches on arXiv, where only technical terms serve as search keys.
+  - All keywords must be in English.
+
+  # Output Example
+  Query to find papers with "RAG" and "AGENT" in the title or abstract:
+
+  (ti:"RAG" AND ti:"AGENT") OR (abs:"RAG" AND abs:"AGENT")
+
+  # Question
+  {question}
+
+  # Research History
+  {res_history}
+
+create_plan: |
+  # Instructions
+  You are an expert at creating task plans involving search-based research. Please create a task plan to achieve the objective based on the user's question or request.  
+  Execute the following two steps:
+
+  ## Step 1
+  - First, read the user's request and clearly define the goal of the research.
+  - Clearly specify the subject in each task plan.
+  - Only the tools listed in the "Available Tools Information" below can be used. Social media searches cannot be performed.
+  - The Vector DB contains only {vector_db_info}, so use it solely for this purpose. Avoid using the "Vector DB search" without a clear purpose or merely as a precaution, as it would be unnecessary.
+  - Consider information from the conversation history when creating the plan. The conversation history includes past interactions between the user and the AI Agent.
+  - If, in the previous interaction, an agent asked a question to the user, ensure your plan takes into account both that question and the user's answer.
+  - Directly searching using the wording from "User Request" can be an effective approach. Avoid explicitly mentioning tool names with phrases like "using ~".
+
+  ## Step 2
+  - Convert the plan into an executable format.
+  - If the plan involves searching or investigating, convert it into a format suitable for a search query. The plan will be directly used by the search tool. Avoid explicitly mentioning tool names with phrases like "[using ~]".
+    - (Example 1) Before conversion: Web search about ~ => After conversion: Tell me about ~.
+    - (Example 2) Before conversion: Investigate ~ => After conversion: Tell me about ~.
+    - (Example 3) Before conversion: Search ~ using ~ tool => After conversion: Tell me about ~.
+
+  # User Request
+  {rev_request}
+
+  # Available Tools Information
+  {tool_info}
+
+  # Constraints
+  - You can create a maximum total of {max_plan} plans. Do not exceed this limit. Create concise and efficient plans achievable within this limit. Due to the limited number of plans allowed, ensure each plan is optimal and efficient.
+  - Different tasks, such as searches and analyses, must be separated into individual plans, as different tools may be required.
+  - It is unnecessary to create a final plan to summarize research results into an answer for the user, as this will be handled separately.
+  - Avoid creating duplicate or redundant task plans.
+
+  # Output
+  Use JSON format as shown below:
+  - `type`: Always set to `"plan"`.
+  - `plan`: Specify the task plans (can be multiple) in an array format. Ensure it matches the number of elements in `plan_status`.
+  - `plan_status`: Specify the execution status for each plan (can be multiple) in an array format. Since you are currently planning, set all values to `"open"`. Ensure it matches the number of elements in `plan`.
+  - Output must be in JSON format. Be careful not to output plain text. Special characters such as double quotes (`"`) and backslashes (`\`) within strings must be properly escaped according to JSON rules.
+
+  Example Output: {{"type": "plan", "plan":["plan1", "plan2"...], "plan_status": ["open", "open"...]}}
+
+  # Conversation History  
+  {msg_history}  
+
+  # Current Date and Time  
+  {date_time}
+
+create_final_answer: |
+  # Instructions
+  You are an expert at summarizing documents. Based on the provided research results, clearly summarize the answer to the user's question.  
+  Refer to the conversation history as well. Particularly, if you have been asked to verify previously researched results, compare earlier answers from this conversation with the provided "Research Results" for verification.  
+  If URLs to source documents are included in the research results, incorporate them into your response.  
+  The research results contain information gathered from multiple resources. Be mindful of document boundaries to avoid mixing information from different sources.
+
+  # User Request
+  {rev_request}
+
+  # Examples of Document Boundaries
+  - In cases such as `{{"title": "***", "content": "***"}}, {{"title": "***", "content": "***"}}`, each JSON object separated by commas represents entirely distinct information.
+  - If the document title contains a proper noun, it may not always relate directly to the content. If the relationship is uncertain, avoid directly answering and prompt the user to confirm the source.
+  - Sections starting with `"## title"` represent entirely distinct sets of information.
+
+  # Research Results
+  {res_history}
+
+  # Conversation History
+  {msg_history}
+
+  # Current Date/Time
+  {date_time}
+
+judge_replan: |
+  # Instructions
+  Determine whether the "Research Results" contain relevant information necessary to answer the user's request.  
+  Output the determination result in JSON format. For the output value, use "yes" if relevant information is included, and "no" if not (lowercase).  
+  Only output "no" if there is absolutely no information available to answer the user's request. Avoid unnecessarily outputting "no," as this will trigger redundant research and delay the response.  
+  Include the reason for your determination within the JSON "reason" field.  
+  The "Conversation History" contains previous interactions between the user and the Agent.  
+  Output must be in JSON format. Carefully avoid outputting plain text. Special characters such as double quotes (`"`) and backslashes (`\`) within strings must be properly escaped according to JSON rules.
+
+  # User Request
+  {rev_request}
+
+  # Research Results
+  {res_history}
+
+  # Conversation History
+  {msg_history}
+
+  # Example Output: {{"is_included": "yes", "reason": "***"}}
+
+  # Current Date and Time  
+  {date_time}
+
+create_revised_plan: |
+  # Instructions
+  You are an expert in creating task plans for research.  
+  Perform the following two steps:
+
+  ## Step 1
+  The previous research was conducted based on the "Previously Created Plan," but the AI Agent concluded with "No answer was found for the question."  
+  The original plan created by the AI Agent is likely to have room for improvement. After careful reflection, create a new and improved task plan aimed at successfully achieving the user's request.
+
+  ## Step 2
+  - Convert the plan into an executable format.
+  - If the plan involves searches or investigations, format it appropriately for searches. The resulting plan will be directly passed to the search tool. Avoid explicitly mentioning tool names with expressions like "[using ~]."
+    - (Example 1) Before conversion: Investigate ~ or perform a web search for ~ => After conversion: Tell me about ~.
+    - (Example 2) Before conversion: Search ~ on the ~ tool => After conversion: Tell me about ~.
+
+  # Constraints
+  - You can create a maximum total of {max_plan} plans. Do not exceed this limit. Develop concise and efficient plans achievable within this limit. Since the number of possible plans is limited, ensure each plan is optimal and efficient.
+  - Only "Web Search" or "Vector DB Search" can be performed. Social media information searches cannot be conducted.
+  - The Vector DB contains only {vector_db_info}; therefore, use it solely for this purpose. Do not perform "Vector DB searches" unnecessarily or "just in case."
+  - It is unnecessary to include a plan to summarize research results into a final answer for the user, as this will be handled separately.
+  - Do not create any plans identical to the "Previously Created Plan." Instead, ensure plans reflect different approaches.
+  - If, in the previous interaction, an agent asked a question to the user, ensure your new plan considers both the agent's question and the user's response.
+  - Avoid creating duplicate or redundant task plans.
+  - Directly using the wording from the "User Request" can be an effective method for searches.
+
+  # Available Tools Information
+  {tool_info}
+
+  # User Request
+  {rev_request}
+
+  # Output
+  Provide the output in a single-line JSON format as shown in the example below. Carefully avoid outputting plain text. Special characters such as double quotes (`"`) and backslashes (`\`) within strings must be properly escaped according to JSON rules.
+  - `type`: Always set to `"plan"`.
+  - `plan`: Specify task plans (multiple allowed) in an array format. Ensure it matches the number of elements in `plan_status`.
+  - `plan_status`: Specify execution status for each plan (multiple allowed) in an array format. At the planning stage, set all values to `"open"`. Ensure it matches the number of elements in `plan`.
+  - Output must be in JSON format. Carefully avoid outputting plain text. Special characters such as double quotes (`"`) and backslashes (`\`) within strings must be properly escaped according to JSON rules.
+
+  # Example Output: {{"type": "plan", "plan":["plan1", "plan2"...], "plan_status": ["open", "open"...]}}
+
+  # Previously Created Plan
+  {plan}
+
+  # Current Date/Time
+  {date_time}

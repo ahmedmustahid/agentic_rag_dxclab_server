@@ -1,0 +1,15 @@
+{
+  // ――― 言語別 editor 設定 ―――
+  "[python]": {
+    // Black でフォーマット
+    "editor.defaultFormatter": "ms-python.black-formatter",
+    "editor.formatOnType": true,
+    "editor.formatOnPaste": true,
+    "editor.formatOnSave": true,
+
+    // 保存時に isort → Black の順で実行
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "explicit"
+    }
+  }
+}
