@@ -65,7 +65,7 @@ Set up the backend environment as follows.
 ### Products Used
 
 - Confirmed to work with Python versions 3.11 and 3.12.
-- Uses Azure Open ID `gpt-4o` or `gpt-4o-mini`.
+- Uses Azure Open AI `gpt-4o` or `gpt-4o-mini`.
 - Uses Tavily Search web search.
 - Uses LangSmith. Not required.
 
@@ -134,7 +134,6 @@ AZURE_OPENAI_API_KEY=***
 OPENAI_API_VERSION=2024-10-21
 AZURE_OPENAI_ENDPOINT=***
 AZURE_OPENAI_CHATGPT_DEPLOYMENT_NAME=gpt-4o
-LLM_CONFIG_FILE_PATH=llm_configs/gpt-4o.yaml
 
 # --- LangSmith ---
 # true: on, false: off

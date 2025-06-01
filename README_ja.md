@@ -67,7 +67,7 @@
 ### 使用プロダクト
 
 - Python version 3.11、3.12 で動作確認済みです。
-- Azure Open ID の `gpt-4o` または `gpt-4o-mini` を使用します。
+- Azure Open AI の `gpt-4o` または `gpt-4o-mini` を使用します。
 - Tavily search の Web 検索を使用します。
 - LangSmith を使用します。必須ではありません。
 
@@ -136,7 +136,6 @@ AZURE_OPENAI_API_KEY=***
 OPENAI_API_VERSION=2024-10-21
 AZURE_OPENAI_ENDPOINT=***
 AZURE_OPENAI_CHATGPT_DEPLOYMENT_NAME=gpt-4o
-LLM_CONFIG_FILE_PATH=llm_configs/gpt-4o.yaml
 
 # --- LangSmith ---
 # true: on, false: off
