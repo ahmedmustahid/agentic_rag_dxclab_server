@@ -17,22 +17,20 @@ router = APIRouter()
 
 
 @router.post("/api/start_chat")
-def start_chat(request: ChatModel, req: Request):
+def start_chat(req: Request):
     """
     Chat start API endpoint.
 
-    When starting a chat, it records the initial log and initializes the session.
+    When starting a chat, it initializes the session.
 
     Args:
-      request (ChatModel): Pydantic model that represents the chat log data.
-      (Expected to include user ID, number of turns, etc.)
       req (Request): FastAPI request object. Used for session management.
 
     Returns:
       StartChat: Result object that includes the chat start date and time.
 
     Raises:
-      Exception: If CSRF token verification fails or an error occurs during log output.
+      Exception: If CSRF token verification fails.
     """
     try:
         check_csrf(req)

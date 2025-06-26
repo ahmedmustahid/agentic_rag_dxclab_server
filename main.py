@@ -4,6 +4,7 @@ Configures the router, sessions.
 
 import json
 import os
+from contextlib import asynccontextmanager
 
 from dotenv import load_dotenv
 from fastapi import FastAPI
@@ -13,6 +14,7 @@ from fastapi.staticfiles import StaticFiles
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 
+from src.routers.agentic_rag.auto_rag_agent import AutoRagAgent
 from src.routers.ask_agent import router as ask_agent
 from src.routers.get_chat_id import router as chat_id
 from src.routers.get_csrf import router as get_csrf
@@ -20,8 +22,17 @@ from src.routers.get_param import router as get_param
 from src.routers.start_chat import router as start_chat
 
 load_dotenv()
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    ar = AutoRagAgent()
+    app.state.graph_app = await ar.create_graph()
+    yield
+
+
 # Since for production use, the settings will not display specifications, etc.
-app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
+app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None, lifespan=lifespan)
 app.add_middleware(
     SessionMiddleware,
     secret_key=os.getenv(

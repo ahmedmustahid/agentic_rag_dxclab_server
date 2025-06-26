@@ -2,6 +2,9 @@ import os
 from pathlib import Path
 
 import yaml
+from dotenv import load_dotenv
+
+load_dotenv()
 
 PROMPT_LANG = os.environ.get("PROMPT_LANG")
 prompts_ja_file = "prompts_ja.yaml"
