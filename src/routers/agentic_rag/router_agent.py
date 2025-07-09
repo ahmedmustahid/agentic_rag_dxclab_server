@@ -3,7 +3,6 @@ import datetime
 from dotenv import load_dotenv
 from langchain.prompts import PromptTemplate
 from langchain_core.output_parsers import JsonOutputParser
-from langchain_core.prompts import PromptTemplate
 from langchain_core.runnables import RunnableConfig
 from langgraph.prebuilt import InjectedState
 from langgraph.types import Command, StreamWriter

@@ -23,7 +23,7 @@ route_request: |
   - Even if the user's question contains no pronouns, the user might expect an answer that considers the context of previous conversations. In such cases, infer the intended meaning by examining the conversation history.
   - When dealing with date/time-related questions such as "X years ago," calculate the exact date/time based on the current date/time provided below and incorporate the calculated result into the `revised_request`.
   - If, even after consulting the conversation history, it remains unclear what a pronoun refers to, or if the subject/object is unclear, confirm details with the user. In such cases, invoke the `ask_human` agent and pose your question to the user. However, try to minimize calling `ask_human`, as frequent clarifications can inconvenience the user. By examining the recent conversation history, you can determine if a similar question was recently asked. When calling `ask_human`, specify the question for the user in the JSON `revised_request` field and include `"agent_name": "ask_human"` in the JSON.
-  - If the user asks for web searches or recent information, specify `"agent_name": "auto_research"` in the JSON.
+  - If the user asks for web searches or recent information, specify `"agent_name": "ask_human"` in the JSON.
   - When the user refers to items numerically, such as "Research 1, 2, and 3," or "Compare items 2 and 3," consider that these numbers might correspond to previously listed bullet points.
   - Before outputting, confirm that no fields are missing from the JSON structure.
 
@@ -31,10 +31,9 @@ route_request: |
   {request}
 
   # Constraints
-  - Only the following three AI Agents can be invoked:
-    - `answer_llm`: Answers based on LLM’s internal knowledge. Mainly used for greetings, simple questions or instructions, and questions referring to past conversation history. It does not have web search capabilities; call another tool if necessary.
-    - `auto_research`: Used when detailed research involving web search or RAG search is needed. Automatically formulates and executes a research plan.
+  - Only the following two AI Agents can be invoked:
     - `ask_human`: This agent asks clarifying questions to the user. Invoke this agent when you must clarify unclear points with the user, but minimize its usage. Include your clarifying question in the `revised_request`. If you require a response from LLM itself, invoke `answer_llm` instead.
+    - `router_agent`: If the user asks for chart or graph or report or anything data related, invoke this agent. It will route the request to the appropriate data source.
 
   # Output
   Use JSON format as shown below.
@@ -44,28 +43,28 @@ route_request: |
   - `revised_reason`: Clearly state the reason for rewriting the question.
   - Ensure the output is in JSON format. Never output as plain text. Special characters such as double quotes (`"`) and backslashes (`\`) within strings must be properly escaped according to JSON rules.
 
-  Example Output: {{"agent_name": "auto_research", "reason_sel": "Because ~.","revised_request": "What is ~?","revised_reason": "Because ~."}}
+  Example Output: {{"agent_name": "ask_human", "reason_sel": "Because ~.","revised_request": "What is ~?","revised_reason": "Because ~."}}
 
-  # Conversation History  
-  {msg_history}  
+  # Conversation History
+  {msg_history}
 
-  # Current Date and Time  
+  # Current Date and Time
   {date_time}
 
 # --- Used at answer_llm.py ---
 
 ans_llm_solo: |
-  # Instructions  
-  Please respond to the user's question or request. When doing so, take into account the conversation history as well.  
-  If there is not enough information to investigate, please ask the user for more details.  
+  # Instructions
+  Please respond to the user's question or request. When doing so, take into account the conversation history as well.
+  If there is not enough information to investigate, please ask the user for more details.
 
-  # Question  
-  {rev_request}  
+  # Question
+  {rev_request}
 
-  # Conversation History  
-  {msg_history}  
+  # Conversation History
+  {msg_history}
 
-  # Current Date and Time  
+  # Current Date and Time
   {date_time}
 
 # --- Used at ask_human.py ---
@@ -84,7 +83,7 @@ ask_human: |
 
 ans_llm_base: |
   # Instructions
-  Answer the user's question or request. If a research history is available, please refer to it.  
+  Answer the user's question or request. If a research history is available, please refer to it.
   Keep the answer concise.
 
   # Question
@@ -98,11 +97,11 @@ ans_llm_base: |
 
 ans_arxiv: |
   # Instructions
-  You are an expert at generating queries to search for technical papers on the arXiv website using its API.  
+  You are an expert at generating queries to search for technical papers on the arXiv website using its API.
   Extract only technical keywords (nouns) and create an arXiv search query. If the user's question is not in English, translate it to English before processing.
-  If the keyword consists of combined words (e.g., multi-agent), separate them into individual keywords.  
-  Do not provide intermediate steps or explanations. Output only the query.  
-  If the user requests to find similar papers, limit the number of search keywords to three or fewer to avoid overly restrictive queries.  
+  If the keyword consists of combined words (e.g., multi-agent), separate them into individual keywords.
+  Do not provide intermediate steps or explanations. Output only the query.
+  If the user requests to find similar papers, limit the number of search keywords to three or fewer to avoid overly restrictive queries.
   If a research history is provided, consider it, as you may be required to generate keywords based on the content described in the research history.
 
   # Constraints
@@ -122,7 +121,7 @@ ans_arxiv: |
 
 create_plan: |
   # Instructions
-  You are an expert at creating task plans involving search-based research. Please create a task plan to achieve the objective based on the user's question or request.  
+  You are an expert at creating task plans involving search-based research. Please create a task plan to achieve the objective based on the user's question or request.
   Execute the following two steps:
 
   ## Step 1
@@ -162,17 +161,17 @@ create_plan: |
 
   Example Output: {{"type": "plan", "plan":["plan1", "plan2"...], "plan_status": ["open", "open"...]}}
 
-  # Conversation History  
-  {msg_history}  
+  # Conversation History
+  {msg_history}
 
-  # Current Date and Time  
+  # Current Date and Time
   {date_time}
 
 create_final_answer: |
   # Instructions
-  You are an expert at summarizing documents. Based on the provided research results, clearly summarize the answer to the user's question.  
-  Refer to the conversation history as well. Particularly, if you have been asked to verify previously researched results, compare earlier answers from this conversation with the provided "Research Results" for verification.  
-  If URLs to source documents are included in the research results, incorporate them into your response.  
+  You are an expert at summarizing documents. Based on the provided research results, clearly summarize the answer to the user's question.
+  Refer to the conversation history as well. Particularly, if you have been asked to verify previously researched results, compare earlier answers from this conversation with the provided "Research Results" for verification.
+  If URLs to source documents are included in the research results, incorporate them into your response.
   The research results contain information gathered from multiple resources. Be mindful of document boundaries to avoid mixing information from different sources.
 
   # User Request
@@ -194,11 +193,11 @@ create_final_answer: |
 
 judge_replan: |
   # Instructions
-  Determine whether the "Research Results" contain relevant information necessary to answer the user's request.  
-  Output the determination result in JSON format. For the output value, use "yes" if relevant information is included, and "no" if not (lowercase).  
-  Only output "no" if there is absolutely no information available to answer the user's request. Avoid unnecessarily outputting "no," as this will trigger redundant research and delay the response.  
-  Include the reason for your determination within the JSON "reason" field.  
-  The "Conversation History" contains previous interactions between the user and the Agent.  
+  Determine whether the "Research Results" contain relevant information necessary to answer the user's request.
+  Output the determination result in JSON format. For the output value, use "yes" if relevant information is included, and "no" if not (lowercase).
+  Only output "no" if there is absolutely no information available to answer the user's request. Avoid unnecessarily outputting "no," as this will trigger redundant research and delay the response.
+  Include the reason for your determination within the JSON "reason" field.
+  The "Conversation History" contains previous interactions between the user and the Agent.
   Output must be in JSON format. Carefully avoid outputting plain text. Special characters such as double quotes (`"`) and backslashes (`\`) within strings must be properly escaped according to JSON rules.
 
   # User Request
@@ -212,16 +211,16 @@ judge_replan: |
 
   # Example Output: {{"is_included": "yes", "reason": "***"}}
 
-  # Current Date and Time  
+  # Current Date and Time
   {date_time}
 
 create_revised_plan: |
   # Instructions
-  You are an expert in creating task plans for research.  
+  You are an expert in creating task plans for research.
   Perform the following two steps:
 
   ## Step 1
-  The previous research was conducted based on the "Previously Created Plan," but the AI Agent concluded with "No answer was found for the question."  
+  The previous research was conducted based on the "Previously Created Plan," but the AI Agent concluded with "No answer was found for the question."
   The original plan created by the AI Agent is likely to have room for improvement. After careful reflection, create a new and improved task plan aimed at successfully achieving the user's request.
 
   ## Step 2
