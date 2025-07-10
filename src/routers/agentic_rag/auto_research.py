@@ -251,7 +251,10 @@ class AutoResearchAgent:
                 content = sa_ins.repair_enc_univ(
                     sa_ins.truncate_text(result.page_content, max_search_txt)
                 )
-                answer += f"## Title: {title}\n{content}\n\n"
+                url = result.metadata["source"]
+                answer += (
+                    f"## Title: {title}\n### URL:{url}\n### Content:\n{content}\n\n"
+                )
                 doc_cnt += 1
         except Exception as err:
             err_str = f"Error: A problem occurred while searching. {err}"
