@@ -41,9 +41,10 @@ route_request: |
   - `reason_sel`: Provide a concise reason.
   - `revised_request`: If rewriting the question, enter the modified question.
   - `revised_reason`: Clearly state the reason for rewriting the question.
+  - `graph_type`: If user asks for a graph(ie chart), determine the graph_type value from any of: bar, pie, box, scatter, histogram, box, heatmap. Assign `"graph_type":"graph_type_value"` in the JSON output below. Default value is "auto".
   - Ensure the output is in JSON format. Never output as plain text. Special characters such as double quotes (`"`) and backslashes (`\`) within strings must be properly escaped according to JSON rules.
 
-  Example Output: {{"agent_name": "ask_human", "reason_sel": "Because ~.","revised_request": "What is ~?","revised_reason": "Because ~."}}
+  Example Output: {{"agent_name": "ask_human", "reason_sel": "Because ~.","revised_request": "What is ~?","revised_reason": "Because ~.", "graph_type":"auto"}}
 
   # Conversation History
   {msg_history}
