@@ -148,7 +148,7 @@ class AutoRagAgent:
         writer(msg)
         return {"messages": [response], "plan_exec": plan_exec}
 
-    def create_graph(self):
+    async def create_graph(self):
         """
         Create a graph of LangGraph
 

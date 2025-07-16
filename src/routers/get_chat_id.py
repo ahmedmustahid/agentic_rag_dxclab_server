@@ -6,14 +6,15 @@ from dotenv import load_dotenv
 from fastapi import APIRouter, Request
 
 from ..schemas.app_schemas import ChatId
+from .utils.csrf_utils import check_csrf
 
 load_dotenv()
-
+PY_FILE_NAME = "[src/routers/get_chat_id.py]: "
 router = APIRouter()
 
 
 @router.post("/api/get_chat_id")
-def get_parameters(request: Request):
+def get_parameters(req: Request):
     """
     Generates a unique Chat ID and returns it as a ChatId schema object.
 
@@ -23,11 +24,16 @@ def get_parameters(request: Request):
     A unique Chat ID is assigned when the chat screen is opened. This ID is managed until the chat screen is closed, reloaded. This Chat ID is used as the key for the action log, so you can check the user's behavior by referring to the log. This is important information that will be the DB key, so it is generated in the backend.
 
     Parameters:
-      request (Request): FastAPI Request object
+      req (Request): FastAPI Request object
 
     Returns:
       ChatId: ChatId schema object containing the newly generated Chat ID
     """
+    try:
+        check_csrf(req)
+    except Exception as err:
+        print(f"{PY_FILE_NAME}{err}")
+        raise err
     chat_id = uuid4()
     ret = ChatId(
         chat_id=str(chat_id),

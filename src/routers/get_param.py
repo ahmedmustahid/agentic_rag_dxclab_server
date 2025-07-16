@@ -5,7 +5,7 @@ Caution: Do not send confidential information to the front end
 import os
 
 from dotenv import load_dotenv
-from fastapi import APIRouter, Request
+from fastapi import APIRouter
 
 from ..schemas.app_schemas import Parameters
 
@@ -16,13 +16,12 @@ router = APIRouter()
 
 
 @router.post("/api/get_param")
-def get_parameters(request: Request):
+def get_parameters():
     """
     An API endpoint to get parameters required by the frontend.
 
     This endpoint provides environment variables and other parameters required by the frontend. However, sensitive information such as passwords should not be sent.
-    Args:
-      request (Request): The current request object.
+
     Returns:
       Parameters: A parameter object containing FRONT_MSG_LANG.
     """
