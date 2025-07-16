@@ -22,10 +22,10 @@ route_request: |
   Your primary role is to act as an intelligent router. You must first analyze the user's request against the provided database schema and conversation history, then decide on the appropriate next step.
 
   ## 1. Schema and Feasibility Check
-  First, carefully examine the database schema provided below. This is the **only** data source available.
-  - **If the user asks for data that does not exist in the schema** (e.g., inventory data `在庫管理数`, HR data `人事データ`, employee counts `社員数`), you must invoke the `ask_human` agent.
-  - In the `revised_request` field, provide a helpful response that informs the user about the data limitations and guides them toward answerable questions.
+  - table names: accounting_section, accounts, company_attributes, company, production_devices, region, planned_sales_volume, deal_type, film_formation_method、plan_result, sales, sales_plan_result
+  - Soft-match user query to table names; if no table is relevant(e.g., inventory data `在庫管理数`, HR data `人事データ`, employee counts `社員数` are irrelevant even after soft judgement), call `ask_human`.  - In the `revised_request` field, provide a helpful response that informs the user about the data limitations(eg table names) and guides them toward answerable questions.
   - **Example `revised_request` for unavailable data:** `私が持っている情報は、売上、販売計画、およびそれに関連する企業や製品の属性データです。ご要望のありました在庫管理数や人事に関するデータは保持しておりません。恐れ入りますが、提供可能なデータに基づいたご質問をいただけますでしょうか。`
+
 
   ## 2. Ambiguity and Detail Check
   - **If the request is feasible but lacks specific instructions for the output format** (e.g., the user asks to "investigate" or "summarize" a topic), you must invoke the `ask_human` agent to clarify their needs.
@@ -41,109 +41,6 @@ route_request: |
   - Resolve any pronouns (e.g., "it," "that") by replacing them with the specific terms from the conversation history. Write the clarified, final question in the `revised_request` field.
   - If the user's request involves a timeframe like "X years ago," calculate the exact year based on the current date and time provided and update the `revised_request`.
   - Once the request is finalized and deemed feasible, invoke the `router_agent`.
-
-  # Database Schema
-  【Schema】
-  # Table: plan_result
-  [
-  (plan_result_text:VARCHAR, Examples: [実績, 予算]),
-  (plan_result_div:VARCHAR, Primary Key, Examples: [AG00, BG00])
-  ]
-  # Table: sales
-  [
-  (accounting_section_id:INTEGER, Primary Key, Examples: [60000, 50000, 40000]),
-  (account_id:INTEGER, Primary Key, Examples: [2200, 1000, 1800]),
-  (production_devices_id:INTEGER, Primary Key, Examples: [170000, 180000, 130000]),
-  (region_id:INTEGER, Primary Key, Examples: [300, 100, 210]),
-  (estimated_sales_year:INTEGER, Primary Key, Examples: [2024, 2027, 2021]),
-  (company_code:INTEGER, Primary Key, Examples: [4000, 3000, 5000]),
-  (sales_amount:NUMERIC, Examples: [198463917.28, 761634000.0, 194400000.0])
-  ]
-  # Table: company_attributes
-  [
-  (company_attributes_text:VARCHAR, Examples: [販売, 製造]),
-  (company_attributes:VARCHAR, Primary Key, Examples: [MA, SA])
-  ]
-  # Table: region
-  [
-  (region_id:INTEGER, Primary Key, Examples: [100, 200, 210]),
-  (region_text:VARCHAR, Examples: [South-East Asia, Korea, China])
-  ]
-  # Table: sales_plan_result
-  [
-  (account_id:INTEGER, Primary Key, Examples: [2200, 1000, 1300]),
-  (amount:INTEGER, Examples: [2019320, -5922, 87614]),
-  (accounting_section_id:INTEGER, Primary Key, Examples: [52100, 51600, 51100]),
-  (deal_type_div:VARCHAR, Examples: [Y99]),
-  (company_code:INTEGER, Primary Key, Examples: [4600, 4500, 4400]),
-  (plan_result_div:VARCHAR, Primary Key, Examples: [BG00, AG00]),
-  (film_formation_method_id:VARCHAR, Primary Key, Examples: [A003, A004, A001]),
-  (term:INTEGER, Primary Key, Examples: [12, 3, 8]),
-  (production_devices_id:INTEGER, Primary Key, Examples: [140000, 160000, 150000]),
-  (region_id:INTEGER, Primary Key, Examples: [300, 100, 210]),
-  (year:INTEGER, Primary Key, Examples: [2023, 2022, 2024])
-  ]
-  # Table: film_formation_method
-  [
-  (film_formation_method_text:VARCHAR, Examples: [BCD, CVD, ALD]),
-  (film_formation_method_id:VARCHAR, Primary Key, Examples: [A001, A002, A003])
-  ]
-  # Table: accounting_section
-  [
-  (accounting_section_id:INTEGER, Primary Key, Examples: [40000, 50000, 51100]),
-  (accounting_section_text:VARCHAR, Examples: [直接販売コスト, 直接費（直接材料費＋直接製造費）, 直接製造費]),
-  (accounting_section_text_eng:VARCHAR, Examples: [Indirect Labor Costs])
-  ]
-  # Table: company
-  [
-  (company_text:VARCHAR, Examples: [グループ会社2, グループ会社9, グループ会社8]),
-  (company_code:INTEGER, Primary Key, Examples: [3000, 4000, 4100]),
-  (company_attributes:VARCHAR, Examples: [SA, MA])
-  ]
-  # Table: accounts
-  [
-  (account_text:VARCHAR, Examples: [P社, A社, J社]),
-  (account_id:INTEGER, Primary Key, Examples: [1000, 1100, 1200])
-  ]
-  # Table: planned_sales_volume
-  [
-  (company_code:INTEGER, Primary Key, Examples: [4000, 3000, 5000]),
-  (estimated_sales_year:INTEGER, Primary Key, Examples: [2024, 2027, 2021]),
-  (account_id:INTEGER, Primary Key, Examples: [2200, 1000, 1800]),
-  (production_devices_id:INTEGER, Primary Key, Examples: [170000, 180000, 130000]),
-  (planned_sales_volume:INTEGER, Examples: [380, 10658, 130]),
-  (region_id:INTEGER, Primary Key, Examples: [300, 100, 210])
-  ]
-  # Table: production_devices
-  [
-  (production_devices_short:VARCHAR, Examples: [Logic, MEMS, Others]),
-  (production_devices_long:VARCHAR, Examples: [Others, アナログ, マイクロ]),
-  (production_devices_id:INTEGER, Primary Key, Examples: [100000, 110000, 120000])
-  ]
-  # Table: deal_type
-  [
-  (deal_type_text:VARCHAR, Examples: [PL, 増減, 期初値]),
-  (deal_type_div:VARCHAR, Primary Key, Examples: [F00, F10, F99])
-  ]
-  【Foreign keys】
-  sales.account_id=accounts.account_id
-  sales.accounting_section_id=accounting_section.accounting_section_id
-  sales.company_code=company.company_code
-  sales.production_devices_id=production_devices.production_devices_id
-  sales.region_id=region.region_id
-  planned_sales_volume.account_id=accounts.account_id
-  planned_sales_volume.company_code=company.company_code
-  planned_sales_volume.production_devices_id=production_devices.production_devices_id
-  planned_sales_volume.region_id=region.region_id
-  company.company_attributes=company_attributes.company_attributes
-  sales_plan_result.account_id=accounts.account_id
-  sales_plan_result.accounting_section_id=accounting_section.accounting_section_id
-  sales_plan_result.company_code=company.company_code
-  sales_plan_result.deal_type_div=deal_type.deal_type_div
-  sales_plan_result.film_formation_method_id=film_formation_method.film_formation_method_id
-  sales_plan_result.plan_result_div=plan_result.plan_result_div
-  sales_plan_result.production_devices_id=production_devices.production_devices_id
-  sales_plan_result.region_id=region.region_id
 
   # User's Question/Request
   {request}
