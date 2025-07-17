@@ -22,7 +22,7 @@ route_request: |
   Your primary role is to act as an intelligent router. You must first analyze the user's request against the provided database schema and conversation history, then decide on the appropriate next step.
 
   ## 1. Schema and Feasibility Check
-  - table names: accounting_section, accounts, company_attributes, company, production_devices, region, planned_sales_volume, deal_type, film_formation_method、plan_result, sales, sales_plan_result
+  - table names: accounting_section, accounts, company_attributes, company, production_devices, region, planned_sales_volume, deal_type, film_formation_method、plan_result, sales, sales_plan_result, wfe
   - Soft-match user query to table names; if no table is relevant(e.g., inventory data `在庫管理数`, HR data `人事データ`, employee counts `社員数` are irrelevant even after soft judgement), call `ask_human`.  - In the `revised_request` field, provide a helpful response that informs the user about the data limitations(eg table names) and guides them toward answerable questions.
   - **Example `revised_request` for unavailable data:** `私が持っている情報は、売上、販売計画、およびそれに関連する企業や製品の属性データです。ご要望のありました在庫管理数や人事に関するデータは保持しておりません。恐れ入りますが、提供可能なデータに基づいたご質問をいただけますでしょうか。`
 
