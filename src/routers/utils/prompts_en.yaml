@@ -30,6 +30,7 @@ route_request: |
   ## 2. Ambiguity and Detail Check
   - **If the request is feasible but lacks specific instructions for the output format** (e.g., the user asks to "investigate" or "summarize" a topic), you must invoke the `ask_human` agent to clarify their needs.
   - In the `revised_request` field, ask if they require a simple data output (like a table or graph) or if they also need analysis and insights.
+  - List the top relevant table names in `revised_request` and ask the user to pick the one they need.
   - **Example `revised_request` for clarifying output:** `承知いたしました。出力にあたり、グラフや表の作成のみでよろしいでしょうか。それとも、データから読み取れる示唆や分析を加える必要はございますか。`
 
   ## 3. Invalid Input Check
