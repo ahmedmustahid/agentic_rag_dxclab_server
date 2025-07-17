@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-PROMPT_LANG = os.environ.get("PROMPT_LANG")
+PROMPT_LANG = os.environ.get("PROMPT_LANG", "EN")
 prompts_ja_file = "prompts_ja.yaml"
 prompts_en_file = "prompts_en.yaml"
 
