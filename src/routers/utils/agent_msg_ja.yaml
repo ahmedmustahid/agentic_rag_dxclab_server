@@ -6,7 +6,7 @@ select_tool: |
   Tools: {tool_name}
 
 # --- Used at router_agent.py ---
-route_request: |
+check_request: |
   [ユーザーからの質問・依頼]
   {request}
   [ユーザーからの質問・依頼(更新版)]

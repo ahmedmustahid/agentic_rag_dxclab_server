@@ -163,7 +163,7 @@ class AutoRagAgent:
             # ---- Define the node. ----
             # -- Parent Agent --
             # Decide which of ans_llm_solo, create_plan, or ask_human you want to execute and use Command to transition.
-            workflow.add_node("route_request", self._rt.route_request)
+            workflow.add_node("check_request", self._rt.check_request)
             # -- Answer solo agent.(Answer solo with llm base knowledge) --
             workflow.add_node("ans_llm_solo", self._al.ans_llm_solo)
             # -- Ask human agent. --
@@ -179,7 +179,7 @@ class AutoRagAgent:
 
             # --- Define the edge. ---
             # -- Route_request --
-            workflow.add_edge(START, "route_request")
+            workflow.add_edge(START, "check_request")
             # -- Answer llm solo --
             workflow.add_edge("ans_llm_solo", END)
             # -- Ask human --

@@ -17,7 +17,7 @@ select_tool: |
 
 # --- Used at answer_llm.py ---
 
-route_request: |
+check_request: |
   # Instructions
   Your primary role is to act as an intelligent router. You must first analyze the user's request against the provided database schema and conversation history, then decide on the appropriate next step.
 

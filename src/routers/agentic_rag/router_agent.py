@@ -34,7 +34,7 @@ class RouterAgent:
     def __init__(self):
         pass
 
-    def route_request(
+    def check_request(
         self,
         state: Annotated[State, InjectedState],
         config: RunnableConfig,
@@ -54,7 +54,7 @@ class RouterAgent:
         messages = state["messages"]
         request = msg_util.get_latest_human_msg(messages)
         # Prompt
-        prompt_template = prompt_mgr.get_prompt("route_request")
+        prompt_template = prompt_mgr.get_prompt("check_request")
         prompt = PromptTemplate(
             template=prompt_template,
             input_variables=["request", "msg_history", "date_time"],
@@ -74,7 +74,7 @@ class RouterAgent:
         rev_request = router_json["revised_request"]
         # Show logs
         msg = agent_msg_mgr.get_msg(
-            "route_request",
+            "check_request",
             request=request,
             rev_request=rev_request,
             agent_name=router_json["agent_name"],
